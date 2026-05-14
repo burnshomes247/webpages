@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Outlook — BURNSHOMES</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0d1f35;
+      --navy-mid: #16304f;
+      --red: #cc1f2d;
+      --gold: #c8a96e;
+      --cream: #f5f0e8;
+      --text: #1a1a2e;
+      --muted: #6b7280;
+      --border: #e2ddd4;
+      --sell: #1a6b45;
+      --wait: #8b3a18;
+      --wild: #1a3d6b;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--navy);
+      padding: 2.5rem 2rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 40px,
+        rgba(255,255,255,0.015) 40px,
+        rgba(255,255,255,0.015) 41px
+      );
+    }
+    .header-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .brand-line {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+    .brand-bar {
+      width: 3px;
+      height: 28px;
+      background: var(--red);
+    }
+    .brand-name {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+    }
+    .brand-name span {
+      color: var(--gold);
+    }
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 0.6rem;
+    }
+    h1 em {
+      font-style: italic;
+      color: var(--gold);
+    }
+    .subtitle {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.55);
+      font-weight: 300;
+      letter-spacing: 0.03em;
+    }
+    .meta-row {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1.8rem;
+      flex-wrap: wrap;
+    }
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .meta-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+    }
+    .meta-value {
+      font-size: 0.85rem;
+      color: var(--gold);
+      font-weight: 500;
+    }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem 5rem;
+    }
+
+    /* ── MARKET SNAPSHOT ── */
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+    .snapshot-card {
+      background: var(--navy);
+      border-radius: 8px;
+      padding: 1.25rem 1.25rem 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .snapshot-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--gold);
+      opacity: 0.4;
+    }
+    .snap-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 0.5rem;
+    }
+    .snap-value {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .snap-note {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+    }
+    .snap-note.up { color: #5dba87; }
+    .snap-note.down { color: #e07a6e; }
+
+    /* ── SECTION HEADERS ── */
+    .section {
+      margin-bottom: 2.5rem;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-sell { background: var(--sell); }
+    .dot-wait { background: var(--wait); }
+    .dot-wild { background: var(--wild); }
+    .dot-snapshot { background: var(--gold); }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .section-title.sell { color: var(--sell); }
+    .section-title.wait { color: var(--wait); }
+    .section-title.wild { color: var(--wild); }
+    .section-title.snapshot { color: var(--navy); }
+
+    /* ── TALKING POINTS ── */
+    .points-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .point-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      background: #fff;
+      border-radius: 6px;
+      padding: 1rem 1.1rem;
+      border: 1px solid var(--border);
+      transition: box-shadow 0.15s;
+    }
+    .point-item:hover {
+      box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    }
+    .point-icon {
+      font-size: 1rem;
+      line-height: 1.5;
+      flex-shrink: 0;
+    }
+    .point-text {
+      font-size: 0.9rem;
+      line-height: 1.6;
+      color: var(--text);
+    }
+    .point-text strong {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.15rem;
+    }
+    .point-text .note {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    .border-sell .point-item { border-left: 3px solid var(--sell); }
+    .border-wait .point-item { border-left: 3px solid var(--wait); }
+    .border-wild .point-item { border-left: 3px solid var(--wild); }
+
+    /* ── PLACEHOLDER ITEM ── */
+    .point-item.placeholder {
+      border-style: dashed;
+      opacity: 0.5;
+    }
+    .point-item.placeholder .point-text {
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy);
+      padding: 1.75rem 2rem;
+      text-align: center;
+    }
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .footer-name {
+      font-family: 'Playfair Display', serif;
+      color: #fff;
+      font-size: 1rem;
+    }
+    .footer-contact {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+    }
+    .footer-contact a {
+      color: var(--gold);
+      text-decoration: none;
+    }
+    .footer-disclaimer {
+      width: 100%;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.25);
+      margin-top: 0.75rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 600px) {
+      .snapshot-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand-line">
+      <div class="brand-bar"></div>
+      <div class="brand-name">BURNSHOMES &nbsp;·&nbsp; <span>RE/MAX Allegiance</span></div>
+    </div>
+    <h1>Market <em>Outlook</em></h1>
+    <div class="meta-row">
+      <div class="meta-item">
+        <span class="meta-label">Market</span>
+        <span class="meta-value">Virginia · Maryland · DC</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Last Updated</span>
+        <span class="meta-value" id="last-updated">May 2025</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Prepared by</span>
+        <span class="meta-value">M. Burns · (703) 403-2022</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- MARKET SNAPSHOT -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-dot dot-snapshot"></div>
+      <h2 class="section-title snapshot">Market Snapshot</h2>
+    </div>
+    <div class="snapshot-grid">
+      <div class="snapshot-card">
+        <div class="snap-label">30-Yr Fixed Rate</div>
+        <div class="snap-value">6.8%</div>
+        <div class="snap-note">↔ Holding steady</div>
+      </div>
+      <div class="snapshot-card">
+        <div class="snap-label">Avg Days on Market</div>
+        <div class="snap-value">18</div>
+        <div class="snap-note up">↓ Fast market</div>
+      </div>
+      <div class="snapshot-card">
+        <div class="snap-label">Active Inventory</div>
+        <div class="snap-value">Low</div>
+        <div class="snap-note down">↓ Below 5-yr avg</div>
+      </div>
+      <div class="snapshot-card">
+        <div class="snap-label">List-to-Sale Ratio</div>
+        <div class="snap-value">101%</div>
+        <div class="snap-note up">↑ Sellers getting over ask</div>
+      </div>
+      <div class="snapshot-card">
+        <div class="snap-label">YoY Price Change</div>
+        <div class="snap-value">+4%</div>
+        <div class="snap-note up">↑ NoVA / close-in suburbs</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SELL NOW -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-dot dot-sell"></div>
+      <h2 class="section-title sell">Reasons to Sell Now</h2>
+    </div>
+    <ul class="points-list border-sell">
+      <li class="point-item">
+        <span class="point-icon">📉</span>
+        <div class="point-text">
+          <strong>Inventory remains historically low</strong>
+          Fewer competing listings means your home commands more attention and stronger offers. Sellers are still operating in a supply-constrained environment.
+        </div>
+      </li>
+      <li class="point-item">
+        <span class="point-icon">💰</span>
+        <div class="point-text">
+          <strong>Prices are near cyclical highs</strong>
+          NoVA and close-in DC suburbs are up ~4% YoY. Waiting for a higher price risks giving back gains if rates drop and inventory surges simultaneously.
+        </div>
+      </li>
+      <li class="point-item">
+        <span class="point-icon">⚡</span>
+        <div class="point-text">
+          <strong>Motivated, qualified buyers in the market</strong>
+          Buyers who have been waiting are ready to act quickly on well-priced homes. Multiple-offer situations are still common in desirable submarkets.
+        </div>
+      </li>
+      <li class="point-item">
+        <span class="point-icon">🏛️</span>
+        <div class="point-text">
+          <strong>Federal workforce uncertainty creating urgency</strong>
+          DOGE and federal agency restructuring are prompting some government employees to sell before potential relocation or income disruption. This creates near-term motivated buyer demand from peers also repositioning.
+          <span class="note">Watch list: could flip to headwind if job losses accelerate</span>
+        </div>
+      </li>
+      <li class="point-item placeholder">
+        <span class="point-icon">➕</span>
+        <div class="point-text">Add new talking point here…</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- WAIT -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-dot dot-wait"></div>
+      <h2 class="section-title wait">Reasons to Wait</h2>
+    </div>
+    <ul class="points-list border-wait">
+      <li class="point-item">
+        <span class="point-icon">📊</span>
+        <div class="point-text">
+          <strong>Rate relief could expand the buyer pool significantly</strong>
+          If 30-year rates drop from ~6.8% to the mid-5s, millions of sidelined buyers re-enter the market. A seller who waits could benefit from a larger, more competitive buyer pool.
+        </div>
+      </li>
+      <li class="point-item">
+        <span class="point-icon">🔨</span>
+        <div class="point-text">
+          <strong>Pre-sale improvements could increase net proceeds</strong>
+          Strategic updates — fresh paint, kitchen refresh, landscaping — can yield 3–5x ROI. A seller with time to prepare may net more than one who lists quickly.
+        </div>
+      </li>
+      <li class="point-item">
+        <span class="point-icon">🗓️</span>
+        <div class="point-text">
+          <strong>Spring 2026 inventory spike not yet materialized</strong>
+          If new construction deliveries or job-loss listings flood the market, competition increases. Waiting to gauge inventory levels in Q1 may be prudent.
+        </div>
+      </li>
+      <li class="point-item placeholder">
+        <span class="point-icon">➕</span>
+        <div class="point-text">Add new talking point here…</div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- WILD CARDS -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-dot dot-wild"></div>
+      <h2 class="section-title wild">Wild Cards &amp; Watch List</h2>
+    </div>
+    <ul class="points-list border-wild">
+      <li class="point-item">
+        <span class="point-icon">🏢</span>
+        <div class="point-text">
+          <strong>Federal workforce reductions (DOGE)</strong>
+          The DC metro is uniquely exposed to federal employment. Sustained layoffs could dampen demand in close-in VA/MD suburbs. Scale and pace of cuts remain the key variable.
+        </div>
+      </li>
+      <li class="point-item">
+        <span class="point-icon">🌐</span>
+        <div class="point-text">
+          <strong>Tariff-driven construction cost inflation</strong>
+          New tariffs on lumber, steel, and appliances are slowing new construction starts, which supports existing home prices — but also raises renovation costs for sellers preparing to list.
+        </div>
+      </li>
+      <li class="point-item">
+        <span class="point-icon">🏦</span>
+        <div class="point-text">
+          <strong>Fed policy trajectory</strong>
+          The Fed has signaled caution on rate cuts in 2025. Timing of any cuts will directly affect buyer purchasing power and demand intensity.
+        </div>
+      </li>
+      <li class="point-item placeholder">
+        <span class="point-icon">➕</span>
+        <div class="point-text">Add new watch list item here…</div>
+      </li>
+    </ul>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-name">BURNSHOMES</div>
+    <div class="footer-contact">
+      RE/MAX Allegiance &nbsp;·&nbsp; <a href="tel:7034032022">(703) 403-2022</a> &nbsp;·&nbsp; <a href="mailto:mike@burnshomes.com">mike@burnshomes.com</a> &nbsp;·&nbsp; <a href="https://burnshomes.com" target="_blank">burnshomes.com</a>
+    </div>
+    <div class="footer-disclaimer">
+      Market data is based on available MLS and industry sources and is subject to change. This document is for informational purposes only and does not constitute a guarantee of value or outcome. © 2025 BURNSHOMES. All rights reserved.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
