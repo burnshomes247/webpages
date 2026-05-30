@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -149,27 +150,8 @@
   .tl-body { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
   .tl-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
 
-  .add-article-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-  @media (max-width: 900px) { .add-article-layout { grid-template-columns: 1fr; } }
-  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
-  .form-card h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--accent); }
-  .form-group { margin-bottom: 14px; }
-  .form-group label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
-  .form-group input, .form-group textarea, .form-group select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; resize: vertical; }
-  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent); }
-  .form-group textarea { min-height: 200px; }
-  .form-group select option { background: var(--surface2); }
-  .btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; width: 100%; }
-  .btn:hover { opacity: 0.85; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-secondary { background: var(--surface3); color: var(--text-muted); border: 1px solid var(--border); }
-  .api-key-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 16px; }
-  .api-key-group label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); display: block; margin-bottom: 6px; }
-  .api-key-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 7px 10px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 11px; outline: none; }
-  .output-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px; min-height: 300px; font-size: 12.5px; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; font-family: 'IBM Plex Mono', monospace; }
-  .status-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
-  .status-dot.active { background: var(--green); animation: pulse 1.5s infinite; }
+
+
   .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
   .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
@@ -204,7 +186,7 @@
   <div class="tab" onclick="showTab('contributors')">Contributors</div>
   <div class="tab" onclick="showTab('timeline')">Timeline</div>
   <div class="tab" onclick="showTab('glossary')">Glossary</div>
-  <div class="tab" onclick="showTab('add')">+ Add Article</div>
+
 </div>
 
 <div class="main">
@@ -617,52 +599,6 @@
     </div>
   </div>
 
-  <div class="panel" id="panel-add">
-    <div class="section-label">Add New Intelligence · Claude API Integration</div>
-    <div class="add-article-layout">
-      <div>
-        <div class="form-card">
-          <h3>Paste Article Text</h3>
-          <div class="api-key-group">
-            <label>Anthropic API Key (stored in session only)</label>
-            <input type="password" id="apiKey" placeholder="sk-ant-...">
-          </div>
-          <div class="form-group">
-            <label>Article Source / Publication</label>
-            <input type="text" id="articleSource" placeholder="e.g. Inman, 1000watt, RealTrends...">
-          </div>
-          <div class="form-group">
-            <label>Article Date</label>
-            <input type="text" id="articleDate" placeholder="e.g. May 2026">
-          </div>
-          <div class="form-group">
-            <label>Article Text</label>
-            <textarea id="articleText" placeholder="Paste full article text here..."></textarea>
-          </div>
-          <button class="btn" id="extractBtn" onclick="extractIntelligence()">Extract Intelligence</button>
-          <div class="status-indicator" id="statusIndicator">
-            <div class="status-dot" id="statusDot"></div>
-            <span id="statusText">Ready</span>
-          </div>
-        </div>
-      </div>
-      <div>
-        <div class="form-card">
-          <h3>Extracted Intelligence</h3>
-          <div class="output-box" id="outputBox">Intelligence extraction results will appear here after processing...
-
-This tool uses Claude to analyze pasted articles through the same stated vs. real reason framework applied throughout this tracker.
-
-Items will be flagged as:
-• NEW — not previously tracked
-• UPDATES — refinements to existing entries
-• DUPLICATE — already captured
-
-Strip opinion, promotional content, and personal anecdotes — only industry-relevant intelligence extracted.</div>
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -671,88 +607,6 @@ Strip opinion, promotional content, and personal anecdotes — only industry-rel
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     event.target.classList.add('active');
     document.getElementById('panel-' + tab).classList.add('active');
-  }
-
-  async function extractIntelligence() {
-    const apiKey = document.getElementById('apiKey').value.trim();
-    const source = document.getElementById('articleSource').value.trim();
-    const date = document.getElementById('articleDate').value.trim();
-    const text = document.getElementById('articleText').value.trim();
-    const btn = document.getElementById('extractBtn');
-    const output = document.getElementById('outputBox');
-    const dot = document.getElementById('statusDot');
-    const statusText = document.getElementById('statusText');
-
-    if (!apiKey) { alert('Please enter your Anthropic API key.'); return; }
-    if (!text) { alert('Please paste article text.'); return; }
-
-    btn.disabled = true;
-    dot.classList.add('active');
-    statusText.textContent = 'Extracting intelligence...';
-    output.textContent = 'Processing...';
-
-    const systemPrompt = `You are an intelligence analyst for a real estate industry tracker focused on the competitive dynamics between brokers (especially Compass), portals (Zillow, Realtor.com), and MLS infrastructure.
-
-Your primary analytical framework is STATED REASON vs. REAL REASON — for every development, distinguish official public framing from underlying competitive mechanics.
-
-Key tracked entities: Robert Reffkin / Compass, Errol Samuelson / Zillow, Brian Boero / 1000watt, Rebecca Jensen / MRED, Jason Oppenheim / Oppenheim Group, Ricky Carruth / AREA, REMAX.
-
-Key topics: Private Listing Networks (PLN), Clear Cooperation Policy, MLS infrastructure, portal competition, double-ending, feed cuts, broker consolidation, consumer-welfare rhetoric.
-
-For each article, extract:
-1. New intelligence items (not previously tracked)
-2. For each item: Entity, Stated Reason, Real Reason, Supporting evidence
-3. Flag whether each item is NEW, UPDATES existing tracking, or DUPLICATE
-
-Strip: opinion without factual basis, promotional content, personal anecdotes, AI/tech hype without evidence.
-
-Format output clearly with sections. Be precise and analytical. No fluff.`;
-
-    const userPrompt = `Source: ${source || 'Unknown'}
-Date: ${date || 'Unknown'}
-
-Article text:
-${text}
-
-Extract intelligence items following the stated vs. real reason framework. Flag what is genuinely new vs. already known in the competitive intelligence landscape.`;
-
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true'
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1500,
-          system: systemPrompt,
-          messages: [{ role: 'user', content: userPrompt }]
-        })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'API error');
-      }
-
-      const data = await response.json();
-      const result = data.content.map(b => b.text || '').join('\n');
-      output.textContent = result;
-      dot.classList.remove('active');
-      dot.style.background = 'var(--green)';
-      statusText.textContent = 'Extraction complete';
-
-    } catch (err) {
-      output.textContent = 'Error: ' + err.message;
-      dot.classList.remove('active');
-      dot.style.background = 'var(--red)';
-      statusText.textContent = 'Error — check API key';
-    }
-
-    btn.disabled = false;
   }
 </script>
 </body>
