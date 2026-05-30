@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RE Intelligence Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #ffffff;
+    --surface: #f4f4f8;
+    --surface2: #eaeaf2;
+    --surface3: #dedeed;
+    --border: #d0d0e0;
+    --border-bright: #b0b0cc;
+    --text: #0f0f1a;
+    --text-muted: #4a4a6a;
+    --text-dim: #8888aa;
+    --accent: #5248e8;
+    --accent2: #e03030;
+    --accent3: #009b7a;
+    --accent4: #c49800;
+    --accent5: #c05a00;
+    --green: #028a60;
+    --red: #cc1430;
+    --yellow: #b38a00;
+    --blue: #1a8fc2;
+    --purple: #7b2d8b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left h1 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; color: var(--text); }
+  .header-left h1 span { color: var(--accent); }
+  .header-subtitle { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .breaking-banner {
+    background: linear-gradient(90deg, #cc143012, #cc143008);
+    border: 1px solid #cc143070;
+    border-radius: 4px;
+    padding: 6px 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--red);
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .breaking-banner::before { content: '●'; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .tabs { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; gap: 0; }
+  .tab { padding: 12px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .section-label { font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; }
+
+  .topic-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 20px; margin-bottom: 32px; }
+  .topic-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .topic-card-header { padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .topic-card-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.3px; }
+  .topic-count { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); background: var(--surface2); padding: 2px 7px; border-radius: 10px; }
+  .topic-card-body { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+
+  .intel-item { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; position: relative; }
+  .intel-item.new { border-left: 3px solid var(--green); }
+  .intel-item.breaking { border-left: 3px solid var(--red); }
+  .intel-item.hot { border-left: 3px solid var(--yellow); }
+
+  .intel-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; flex-wrap: wrap; }
+  .tag { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 0.5px; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; white-space: nowrap; }
+  .tag-entity { background: #6c63ff15; color: var(--accent); border: 1px solid #5248e860; }
+  .tag-stated { background: #1a8fc215; color: var(--blue); border: 1px solid #1a8fc260; }
+  .tag-real { background: #cc143015; color: var(--red); border: 1px solid #cc143060; }
+  .tag-new { background: #028a6015; color: var(--green); border: 1px solid #028a6060; }
+  .tag-breaking { background: #cc143020; color: var(--red); border: 1px solid #cc143088; animation: pulse 2s infinite; }
+  .tag-litigation { background: #c05a0015; color: var(--accent5); border: 1px solid #c05a0060; }
+  .tag-policy { background: #b38a0015; color: var(--yellow); border: 1px solid #b38a0060; }
+  .tag-market { background: #7b2d8b15; color: #7b2d8b; border: 1px solid #7b2d8b60; }
+  .tag-infra { background: #009b7a15; color: var(--accent3); border: 1px solid #009b7a60; }
+
+  .intel-stated, .intel-real { font-size: 12.5px; line-height: 1.5; margin-bottom: 5px; }
+  .intel-stated strong, .intel-real strong { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 3px; }
+  .intel-stated strong { color: var(--blue); }
+  .intel-real strong { color: var(--red); }
+  .intel-stated { color: var(--text-muted); }
+  .intel-real { color: var(--text); }
+
+  .intel-note { font-size: 11.5px; color: var(--text-muted); margin-top: 6px; padding-top: 6px; border-top: 1px solid var(--border); font-style: italic; }
+  .new-badge { position: absolute; top: 8px; right: 8px; background: var(--green); color: #fff; font-family: 'IBM Plex Mono', monospace; font-size: 8px; font-weight: 600; padding: 1px 5px; border-radius: 2px; letter-spacing: 0.5px; }
+
+  .contributors-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+  .contributor-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .contributor-header { padding: 16px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .contributor-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+  .contributor-role { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .contributor-alignment { font-family: 'IBM Plex Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 3px; white-space: nowrap; margin-top: 3px; }
+  .align-compass { background: #6c63ff15; color: var(--accent); border: 1px solid #5248e860; }
+  .align-zillow { background: #1a8fc215; color: var(--blue); border: 1px solid #1a8fc260; }
+  .align-neutral { background: #00000010; color: var(--text-muted); border: 1px solid var(--border); }
+  .align-critic { background: #cc143015; color: var(--red); border: 1px solid #cc143060; }
+  .align-analyst { background: #b38a0015; color: var(--yellow); border: 1px solid #b38a0060; }
+
+  .contributor-positions { padding: 14px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .position-item { font-size: 12.5px; line-height: 1.5; padding: 8px 10px; background: var(--surface2); border-radius: 4px; border-left: 2px solid var(--border-bright); }
+  .position-item.stated-pos { border-left-color: var(--blue); }
+  .position-item.real-pos { border-left-color: var(--red); }
+  .position-item.analysis { border-left-color: var(--yellow); }
+  .position-type { font-family: 'IBM Plex Mono', monospace; font-size: 8.5px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
+  .position-item.stated-pos .position-type { color: var(--blue); }
+  .position-item.real-pos .position-type { color: var(--red); }
+  .position-item.analysis .position-type { color: var(--yellow); }
+
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+  .timeline-item { position: relative; margin-bottom: 20px; }
+  .timeline-item::before { content: ''; position: absolute; left: -25px; top: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--border-bright); border: 1px solid var(--border); }
+  .timeline-item.tl-breaking::before { background: var(--red); border-color: var(--red); box-shadow: 0 0 8px var(--red); }
+  .timeline-item.tl-major::before { background: var(--accent); border-color: var(--accent); }
+  .timeline-item.tl-notable::before { background: var(--yellow); border-color: var(--yellow); }
+  .timeline-item.tl-new::before { background: var(--green); border-color: var(--green); }
+  .tl-date { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); margin-bottom: 4px; }
+  .tl-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .tl-body { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+  .tl-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 6px; }
+
+  .add-article-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 900px) { .add-article-layout { grid-template-columns: 1fr; } }
+  .form-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
+  .form-card h3 { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; margin-bottom: 16px; color: var(--accent); }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; }
+  .form-group input, .form-group textarea, .form-group select { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 9px 12px; color: var(--text); font-family: 'IBM Plex Sans', sans-serif; font-size: 13px; outline: none; transition: border-color 0.2s; resize: vertical; }
+  .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--accent); }
+  .form-group textarea { min-height: 200px; }
+  .form-group select option { background: var(--surface2); }
+  .btn { background: var(--accent); color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; width: 100%; }
+  .btn:hover { opacity: 0.85; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-secondary { background: var(--surface3); color: var(--text-muted); border: 1px solid var(--border); }
+  .api-key-group { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 12px 14px; margin-bottom: 16px; }
+  .api-key-group label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); display: block; margin-bottom: 6px; }
+  .api-key-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 7px 10px; color: var(--text); font-family: 'IBM Plex Mono', monospace; font-size: 11px; outline: none; }
+  .output-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px; min-height: 300px; font-size: 12.5px; line-height: 1.6; color: var(--text-muted); white-space: pre-wrap; font-family: 'IBM Plex Mono', monospace; }
+  .status-indicator { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text-dim); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text-dim); }
+  .status-dot.active { background: var(--green); animation: pulse 1.5s infinite; }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; padding: 12px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+  .filter-btn { background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; padding: 5px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+  .filter-btn:hover, .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border-bright); border-radius: 3px; }
+  @media (max-width: 768px) { .header { padding: 14px 16px; flex-wrap: wrap; gap: 10px; } .tabs { padding: 0 16px; overflow-x: auto; } .main { padding: 16px; } .topic-grid { grid-template-columns: 1fr; } .contributors-grid { grid-template-columns: 1fr; } }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+  .stat-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .stat-chip { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 16px; font-family: 'IBM Plex Mono', monospace; }
+  .stat-chip .stat-val { font-size: 20px; font-weight: 600; color: var(--accent); display: block; line-height: 1.2; }
+  .stat-chip .stat-lbl { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>RE <span>INTEL</span> TRACKER</h1>
+    <div class="header-subtitle">Real Estate Competitive Intelligence · Private Listings · MLS Infrastructure · Portal Wars</div>
+  </div>
+  <div class="breaking-banner">BREAKING: Judge orders MRED to restore Zillow's Chicagoland listing access</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('topics')">By Topic</div>
+  <div class="tab" onclick="showTab('contributors')">Contributors</div>
+  <div class="tab" onclick="showTab('timeline')">Timeline</div>
+  <div class="tab" onclick="showTab('glossary')">Glossary</div>
+  <div class="tab" onclick="showTab('add')">+ Add Article</div>
+</div>
+
+<div class="main">
+  <div class="panel active" id="panel-topics">
+    <div class="stat-row">
+      <div class="stat-chip"><span class="stat-val">6</span><span class="stat-lbl">Topic Buckets</span></div>
+      <div class="stat-chip"><span class="stat-val">28+</span><span class="stat-lbl">Intel Items</span></div>
+      <div class="stat-chip"><span class="stat-val">8</span><span class="stat-lbl">Key Players</span></div>
+      <div class="stat-chip"><span class="stat-val" style="color:var(--red)">LIVE</span><span class="stat-lbl">Litigation Active</span></div>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>Stated reason (official framing)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--red)"></div>Real reason (underlying motive)</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>New this session</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--yellow)"></div>High priority / developing</div>
+    </div>
+    <div class="topic-grid">
+      <div class="topic-card">
+        <div class="topic-card-header">
+          <div class="topic-card-title" style="color:var(--accent)">🏠 Private Listing Networks (PLN)</div>
+          <span class="topic-count">8 items</span>
+        </div>
+        <div class="topic-card-body">
+          <div class="intel-item breaking">
+            <div class="intel-meta"><span class="tag tag-entity">Compass</span><span class="tag tag-breaking">Breaking</span><span class="tag tag-policy">Policy</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Private exclusives protect seller privacy and allow soft-launch testing before MLS exposure.</div>
+            <div class="intel-real"><strong>Real</strong>Listing acquisition tool — Compass pitches it to ~100% of sellers despite being appropriate for only 1–2%. Agents and broker benefit from double-ending; sellers likely do not.</div>
+            <div class="intel-note">Source: Jason Oppenheim, Inman, May 2026 · ~97% of Compass private exclusives eventually reach MLS anyway, indicating the "exclusive" phase primarily serves agent recruitment.</div>
+          </div>
+          <div class="intel-item hot">
+            <div class="intel-meta"><span class="tag tag-entity">Compass / MRED</span><span class="tag tag-policy">PLN Expansion</span></div>
+            <div class="intel-stated"><strong>Stated</strong>MRED dropped NAR membership requirement to expand MLS access and serve more members.</div>
+            <div class="intel-real"><strong>Real</strong>Regulatory bypass — removing NAR membership requirement enables Compass to use MRED as backbone of its national PLN rollout without triggering NAR's Clear Cooperation Policy enforcement.</div>
+            <div class="intel-note">April 2026. The "Compass playbook": rule change + nationwide MLS expansion + Compass as launch partner.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Compass</span><span class="tag tag-policy">Strategy</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Private listing network is a consumer service offering sellers flexible marketing options.</div>
+            <div class="intel-real"><strong>Real</strong>Scale as competitive weapon — network power derives from Compass's size (~35,000+ agents). The PLN only works at scale; smaller brokers cannot replicate it, creating structural competitive moat.</div>
+            <div class="intel-note">Oppenheim: danger is the downstream policy leverage Compass gains through consolidation, not just listing volume.</div>
+          </div>
+          <div class="intel-item new">
+            <div class="new-badge">NEW</div>
+            <div class="intel-meta"><span class="tag tag-entity">Oppenheim</span><span class="tag tag-new">New</span><span class="tag tag-policy">Warning</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Compass consolidation raises competitive concerns about headcount and market share.</div>
+            <div class="intel-real"><strong>Real</strong>Policy leverage is the real threat — Compass is consolidating to shape MLS and industry policy in its favor, at the expense of independent brokers and consumer interests.</div>
+            <div class="intel-note">Oppenheim, May 2026: "The weight that they have to shape policy is more concerning" than agent headcount alone. Predicts buyers will eventually need a Compass agent to access Compass listings — calls it a future class action.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Industry</span><span class="tag tag-policy">Distinction</span></div>
+            <div class="intel-stated"><strong>Stated</strong>All internal listing networks are equivalent and raise similar concerns.</div>
+            <div class="intel-real"><strong>Real</strong>Scale determines harm — internal networks at small brokerages are data management; networks weaponized at Compass's scale create market-wide exclusion effects. Size is the variable that transforms tool into weapon.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Washington State</span><span class="tag tag-policy">Regulation</span><span class="tag tag-new">Watch</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Washington state mandatory full public marketing law takes effect June 2026.</div>
+            <div class="intel-real"><strong>Real</strong>Live regulatory test case — first state-level direct challenge to the PLN model. Outcome will signal whether legislative approaches can constrain private exclusives where NAR rule enforcement has not.</div>
+            <div class="intel-note">Effective June 2026. Watch for Compass response and compliance posture.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-card">
+        <div class="topic-card-header">
+          <div class="topic-card-title" style="color:var(--red)">⚖️ Zillow–Compass Litigation</div>
+          <span class="topic-count">5 items</span>
+        </div>
+        <div class="topic-card-body">
+          <div class="intel-item breaking">
+            <div class="intel-meta"><span class="tag tag-entity">Zillow</span><span class="tag tag-litigation">Federal Lawsuit</span><span class="tag tag-breaking">Breaking</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Zillow filed federal antitrust suit to protect consumer access to listing data and preserve competitive marketplace.</div>
+            <div class="intel-real"><strong>Real</strong>Portal survival play — Compass terminated direct Zillow feeds May 8, removing 25%+ of Chicagoland listings. Zillow's lead-gen business collapses if major brokerages route listings around it. Lawsuit is existential defense of the portal model.</div>
+            <div class="intel-note">Filed May 2026, U.S. District Court, Northern Illinois. Defendants: Compass and MRED. Claims: per se unlawful boycott and monopoly enforcement.</div>
+          </div>
+          <div class="intel-item breaking">
+            <div class="intel-meta"><span class="tag tag-entity">MRED / Judge</span><span class="tag tag-breaking">Court Order</span><span class="tag tag-litigation">Active</span></div>
+            <div class="intel-stated"><strong>Stated</strong>—</div>
+            <div class="intel-real"><strong>Real</strong>Judge ordered MRED to restore Zillow's full access to all Chicagoland listings — preliminary injunction victory for Zillow. Signals court skepticism of the feed-cut strategy as competitive tool.</div>
+            <div class="intel-note">May 26, 2026. Active development. MRED compliance posture pending.</div>
+          </div>
+          <div class="intel-item hot">
+            <div class="intel-meta"><span class="tag tag-entity">Compass / Zillow</span><span class="tag tag-policy">Feed Cut</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Compass terminated Zillow feeds to give sellers control over where their listings appear.</div>
+            <div class="intel-real"><strong>Real</strong>Leverage maneuver — removing listings from Zillow forces buyers back to Compass-controlled surfaces, advancing the gated-inventory end-state Oppenheim warns about. Also destabilizes Zillow's portal traffic at scale.</div>
+            <div class="intel-note">May 8, 2026. Triggered Zillow's federal filing. MLS Grid simultaneously warned Zillow with a deadline.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Zillow / Realtor.com</span><span class="tag tag-infra">Partnership</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Zillow and Realtor.com announced pre-marketing listing partnership to enhance consumer discovery.</div>
+            <div class="intel-real"><strong>Real</strong>Enemy-of-enemy alliance — two competing portals temporarily aligned against Compass PLN threat. Signals how serious the listing access crisis is when rivals cooperate.</div>
+            <div class="intel-note">May 5, 2026. Structurally unusual; portals typically compete for listing exclusivity.</div>
+          </div>
+          <div class="intel-item new">
+            <div class="new-badge">NEW</div>
+            <div class="intel-meta"><span class="tag tag-entity">Oppenheim</span><span class="tag tag-new">New</span><span class="tag tag-litigation">Commentary</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Zillow's lawsuit is a response to listing access concerns.</div>
+            <div class="intel-real"><strong>Real</strong>"Race to the bottom" — Oppenheim frames Zillow suit as direct response to the same PLN dynamic he has criticized. Both portals and large brokerages competing to control inventory in ways that harm buyers and sellers alike.</div>
+            <div class="intel-note">Oppenheim, May 2026. Neutral-to-critical framing of both sides as motivated by inventory control, not consumer welfare.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-card">
+        <div class="topic-card-header">
+          <div class="topic-card-title" style="color:var(--accent3)">🔧 MLS Infrastructure & Policy</div>
+          <span class="topic-count">5 items</span>
+        </div>
+        <div class="topic-card-body">
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">NAR / MLS</span><span class="tag tag-policy">Clear Cooperation</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Clear Cooperation Policy (CCP) requires listings be submitted to MLS within 1 business day of public marketing, protecting buyer access.</div>
+            <div class="intel-real"><strong>Real</strong>CCP is the primary rule Compass's PLN strategy is engineered to route around. MRED dropping NAR membership requirement is directly aimed at decoupling from CCP enforcement.</div>
+          </div>
+          <div class="intel-item hot">
+            <div class="intel-meta"><span class="tag tag-entity">MRED</span><span class="tag tag-infra">Infrastructure</span></div>
+            <div class="intel-stated"><strong>Stated</strong>MRED (Midwest Real Estate Data) is the Chicagoland MLS serving regional brokers.</div>
+            <div class="intel-real"><strong>Real</strong>PLN backbone — MRED has become the infrastructure layer for Compass's national PLN expansion. Rebecca Jensen (CEO) named as co-defendant in Zillow antitrust suit. MRED's decision to drop NAR membership requirement is the operational mechanism enabling the Compass playbook.</div>
+            <div class="intel-note">Rebecca Jensen is a key tracked entity. MRED now subject to federal court injunction.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">MLS Grid</span><span class="tag tag-infra">Warning</span></div>
+            <div class="intel-stated"><strong>Stated</strong>MLS Grid issued compliance warning to Zillow regarding feed standards.</div>
+            <div class="intel-real"><strong>Real</strong>Counter-pressure on Zillow — issued simultaneously with Compass feed cut, suggesting coordinated pressure campaign on the portal from MLS infrastructure layer.</div>
+            <div class="intel-note">Issued with deadline, timing aligned with May 8 Compass feed termination.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Reffkin / Compass</span><span class="tag tag-infra">Proposal</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Robert Reffkin floated concept of a national MLS with Brian Donnellan as potential CEO.</div>
+            <div class="intel-real"><strong>Real</strong>Regulatory capture play — a Compass-friendly national MLS would replace the fragmented local MLS system with a structure Compass could more easily influence. Donnellan framing adds legitimacy cover.</div>
+            <div class="intel-note">Tracking: whether this surfaces as formal proposal amid litigation. Strategically timed to litigation period.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Boero / 1000watt</span><span class="tag tag-infra">Analysis</span></div>
+            <div class="intel-stated"><strong>Stated</strong>MLS is a cooperative data-sharing infrastructure serving brokers.</div>
+            <div class="intel-real"><strong>Real</strong>MLS is foundational agent infrastructure — Boero's framing: the MLS is the system most agents rely on daily for their livelihoods. Corporate fight between Compass and Zillow is largely irrelevant to working agents whose interests sit with MLS stability.</div>
+            <div class="intel-note">Boero, "Friday Flash: What about the agent?" May 2026.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-card">
+        <div class="topic-card-header">
+          <div class="topic-card-title" style="color:var(--blue)">📱 Portal Competition & Lead Gen</div>
+          <span class="topic-count">5 items</span>
+        </div>
+        <div class="topic-card-body">
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Zillow</span><span class="tag tag-policy">Business Model</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Zillow connects buyers and sellers with real estate professionals through its marketplace.</div>
+            <div class="intel-real"><strong>Real</strong>Lead monetization at scale — Zillow's revenue depends on comprehensive listing inventory driving buyer traffic, which is then monetized as leads sold back to agents. Compass feed removal directly attacks this flywheel.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Zillow</span><span class="tag tag-policy">Contact Form</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Contact form on Zillow listings connects buyers with the listing agent for convenience.</div>
+            <div class="intel-real"><strong>Real</strong>Lead capture mechanism — contact form fuses listing display with agent selection, routing buyer to Zillow's paid agent network rather than necessarily the listing agent. Poorly serves buyers who may not realize they're being directed to a lead-purchased agent.</div>
+            <div class="intel-note">Boero's "plain language disclosure test" would expose this: does the buyer know what's happening when they click "Contact"?</div>
+          </div>
+          <div class="intel-item hot">
+            <div class="intel-meta"><span class="tag tag-entity">Zillow</span><span class="tag tag-litigation">Referral Fees</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Zillow's agent referral program connects consumers with local agents.</div>
+            <div class="intel-real"><strong>Real</strong>Undisclosed referral fees — Zillow sued for failing to disclose referral fees paid by agents to Zillow, creating a hidden financial relationship that influences which agents buyers are connected to.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Zillow / Realtor.com</span><span class="tag tag-policy">Alliance</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Zillow Preview / Realtor.com pre-marketing partnership expands listing visibility for sellers.</div>
+            <div class="intel-real"><strong>Real</strong>Defensive inventory aggregation — competing portals temporarily cooperating to counter Compass's private listing network. Portal inventory access is zero-sum; partnership signals threat level.</div>
+            <div class="intel-note">May 5, 2026. Errol Samuelson (Zillow) key architect.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Industry</span><span class="tag tag-infra">AI Shift</span></div>
+            <div class="intel-stated"><strong>Stated</strong>AI tools are transforming how buyers search for homes and connect with agents.</div>
+            <div class="intel-real"><strong>Real</strong>Structural decoupling — 27% of 2025 buyers used AI to find agents, unbundling agent selection from listing display. This structurally undermines portal lead-gen moats over time. Portals' core value proposition (listing display → agent leads) weakens as buyers find agents independently.</div>
+            <div class="intel-note">Long-run structural threat to both Zillow and Compass's agent-lead models. Oppenheim dissents: AI impact minimal in luxury market.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-card">
+        <div class="topic-card-header">
+          <div class="topic-card-title" style="color:var(--yellow)">🤝 Broker, Agent & Franchisor Dynamics</div>
+          <span class="topic-count">5 items</span>
+        </div>
+        <div class="topic-card-body">
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">REMAX</span><span class="tag tag-policy">Positioning</span></div>
+            <div class="intel-stated"><strong>Stated</strong>REMAX supports listing transparency and consumer-first practices.</div>
+            <div class="intel-real"><strong>Real</strong>Pro-Zillow Preview positioning — REMAX has aligned with Zillow's pre-marketing framework, creating a broker-portal alliance dynamic against Compass's PLN model.</div>
+          </div>
+          <div class="intel-item new">
+            <div class="new-badge">NEW</div>
+            <div class="intel-meta"><span class="tag tag-entity">Oppenheim</span><span class="tag tag-new">New</span><span class="tag tag-market">Luxury Market</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Luxury brokerages face same competitive pressures as mainstream market.</div>
+            <div class="intel-real"><strong>Real</strong>Luxury is sheltered but watching — Oppenheim says luxury brokerages are insulated from immediate competitive pressure, but are tracking downstream policy implications carefully because Compass's policy leverage game affects all market segments.</div>
+            <div class="intel-note">Oppenheim, May 2026. LA luxury specifically impacted by Measure ULA: $5.3M+ transactions dropped from ~65/month to under 30. Newport Beach and San Diego active.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Boero / 1000watt</span><span class="tag tag-policy">Silent Majority</span></div>
+            <div class="intel-stated"><strong>Stated</strong>The Compass–Zillow fight is the central issue for the agent community.</div>
+            <div class="intel-real"><strong>Real</strong>Silent agent majority — most agents are indifferent to the corporate fight, which is irrelevant to their daily work. Agents' interests sit with MLS stability, not with Compass's or Zillow's corporate positioning. Agents are collateral damage in a fight they didn't start.</div>
+            <div class="intel-note">Boero, "Friday Flash: What about the agent?" May 2026. The "silent majority principle" — where agent interests actually sit, separate from broker/portal framing.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Ricky Carruth</span><span class="tag tag-policy">Agent Advocacy</span></div>
+            <div class="intel-stated"><strong>Stated</strong>American Real Estate Association represents agent interests in industry policy.</div>
+            <div class="intel-real"><strong>Real</strong>NAR alternative — Carruth and AREA position as agent-first alternative to NAR and broker-dominated policy debates, seeking to represent the working agent voice distinct from franchisor interests.</div>
+          </div>
+          <div class="intel-item new">
+            <div class="new-badge">NEW</div>
+            <div class="intel-meta"><span class="tag tag-entity">Oppenheim</span><span class="tag tag-new">New</span><span class="tag tag-policy">AI / Tech</span></div>
+            <div class="intel-stated"><strong>Stated</strong>AI and technology are reshaping real estate agent work.</div>
+            <div class="intel-real"><strong>Real</strong>Contrarian dissent — Oppenheim argues AI impact is overstated in luxury, where relationship/physical nature of work insulates agents. Industry is "pretending" AI matters more than it does; tech can help around edges but not displace agents.</div>
+            <div class="intel-note">Oppenheim, May 2026. Contrast with structural AI-decoupling data (27% of buyers using AI for agent selection). Luxury market may be a genuine exception.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topic-card">
+        <div class="topic-card-header">
+          <div class="topic-card-title" style="color:var(--accent5)">🪞 Consumer-Welfare Rhetoric & Framing</div>
+          <span class="topic-count">4 items</span>
+        </div>
+        <div class="topic-card-body">
+          <div class="intel-item hot">
+            <div class="intel-meta"><span class="tag tag-entity">Boero / Industry</span><span class="tag tag-policy">Analysis</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Multiple competing actors — Compass and Zillow — both invoke consumer welfare as their primary justification.</div>
+            <div class="intel-real"><strong>Real</strong>"Hall of rhetorical mirrors" — when opposing parties simultaneously claim consumer welfare for contradictory positions, it signals rhetorical cover rather than genuine alignment. Consumer-welfare framing is a tell, not a principle.</div>
+            <div class="intel-note">Boero, May 2026. Key analytical framework for evaluating all industry claims.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Industry</span><span class="tag tag-policy">Disclosure Test</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Industry disclosures inform consumers about agent relationships and compensation.</div>
+            <div class="intel-real"><strong>Real</strong>Boero's "plain language disclosure test" — proposed benchmark: can a disclosure be read aloud to a client and have them understand what's happening? Most current disclosures fail this test. Applies to contact forms, referral arrangements, and PLN pitches alike.</div>
+            <div class="intel-note">Boero, 1000watt. Active proposed benchmark for evaluating industry disclosure quality.</div>
+          </div>
+          <div class="intel-item">
+            <div class="intel-meta"><span class="tag tag-entity">Compass / Zillow</span><span class="tag tag-policy">Competing Claims</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Compass: private exclusives serve sellers. Zillow: listing access serves buyers. Both claim consumer protection.</div>
+            <div class="intel-real"><strong>Real</strong>Both claims are partially true and primarily self-serving. Compass benefits from double-ending and listing acquisition. Zillow benefits from comprehensive inventory driving portal traffic. Consumer welfare is the available rhetorical frame, not the primary driver.</div>
+          </div>
+          <div class="intel-item new">
+            <div class="new-badge">NEW</div>
+            <div class="intel-meta"><span class="tag tag-entity">Oppenheim</span><span class="tag tag-new">New</span><span class="tag tag-policy">Industry Honesty</span></div>
+            <div class="intel-stated"><strong>Stated</strong>Industry discussion of AI and technology is substantive and evidence-based.</div>
+            <div class="intel-real"><strong>Real</strong>Technology rhetoric as marketing — Oppenheim says new brokerages "pretend" AI is important to differentiate themselves, when the actual impact on relationship-driven real estate is limited. Calls for industry honesty about technology limits.</div>
+            <div class="intel-note">Oppenheim, May 2026. Consistent with Boero's "hall of mirrors" framing — technology claims as another rhetorical layer.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-contributors">
+    <div class="section-label">Key Players · All Positions Consolidated</div>
+    <div class="contributors-grid">
+      <div class="contributor-card">
+        <div class="contributor-header">
+          <div><div class="contributor-name">Robert Reffkin</div><div class="contributor-role">CEO, Compass — largest US brokerage, PLN operator, antitrust defendant</div></div>
+          <div class="contributor-alignment align-compass">Compass</div>
+        </div>
+        <div class="contributor-positions">
+          <div class="position-item stated-pos"><div class="position-type">Stated Position</div>Private exclusives give sellers flexible, privacy-protective marketing options. Compass is consumer-first.</div>
+          <div class="position-item real-pos"><div class="position-type">Real Position / Underlying</div>PLN is a listing acquisition and double-ending tool. National expansion via MRED creates the Compass playbook: rule change + MLS expansion + Compass as launch partner. Floated national MLS concept with Donnellan as potential CEO — regulatory capture framing.</div>
+          <div class="position-item analysis"><div class="position-type">Strategic Pattern</div>Consolidation to build policy leverage. Scale as competitive weapon. Engineers around CCP enforcement by removing NAR membership requirements.</div>
+        </div>
+      </div>
+      <div class="contributor-card">
+        <div class="contributor-header">
+          <div><div class="contributor-name">Errol Samuelson</div><div class="contributor-role">Chief Industry Development Officer, Zillow — portal, antitrust plaintiff, federal lawsuit filer</div></div>
+          <div class="contributor-alignment align-zillow">Zillow</div>
+        </div>
+        <div class="contributor-positions">
+          <div class="position-item stated-pos"><div class="position-type">Stated Position</div>Zillow's federal lawsuit protects consumer access to listing data and the competitive marketplace.</div>
+          <div class="position-item real-pos"><div class="position-type">Real Position / Underlying</div>Existential portal defense — Compass terminated Zillow feeds May 8, removing 25%+ of Chicagoland listings. Zillow's lead-gen model collapses without comprehensive inventory. Lawsuit is survival move. Pre-marketing partnership with Realtor.com (competitor) signals desperation of the threat.</div>
+          <div class="position-item analysis"><div class="position-type">Exposure</div>Zillow also sued separately for undisclosed referral fees. Its own contact form fuses listing display with agent selection in ways Boero's disclosure test would likely fail.</div>
+        </div>
+      </div>
+      <div class="contributor-card">
+        <div class="contributor-header">
+          <div><div class="contributor-name">Brian Boero</div><div class="contributor-role">Co-founder, 1000watt — industry analyst, primary analytical source</div></div>
+          <div class="contributor-alignment align-analyst">Analyst</div>
+        </div>
+        <div class="contributor-positions">
+          <div class="position-item stated-pos"><div class="position-type">Framework: Plain Language Disclosure Test</div>Proposed benchmark: can a disclosure be read aloud to a client and have them actually understand what's happening? Most industry disclosures fail. Applies to contact forms, referral arrangements, and PLN pitches.</div>
+          <div class="position-item stated-pos"><div class="position-type">Framework: Hall of Rhetorical Mirrors</div>When Compass and Zillow both invoke consumer welfare for opposing positions, this signals rhetorical cover, not genuine alignment. Consumer-welfare framing is a tell.</div>
+          <div class="position-item stated-pos"><div class="position-type">Framework: Silent Agent Majority</div>Most agents are indifferent to the Compass–Zillow corporate fight, which is irrelevant to their daily work. Agents' interests sit with MLS stability. Agents are collateral damage in a fight they didn't start.</div>
+          <div class="position-item real-pos"><div class="position-type">Structural Observation</div>MLS is foundational agent infrastructure, not just a data repo. The corporate fight is largely "above" agents — they are bystanders to a dispute between brokers and portals about inventory control and lead economics.</div>
+          <div class="position-item analysis"><div class="position-type">On Contact Forms</div>Zillow's contact form fuses listing display with agent selection, poorly serving buyers who don't understand they may be routed to a lead-purchased agent, not the listing agent.</div>
+        </div>
+      </div>
+      <div class="contributor-card">
+        <div class="contributor-header">
+          <div><div class="contributor-name">Jason Oppenheim</div><div class="contributor-role">Founder, The Oppenheim Group (Newport Beach / LA / San Diego) — competing broker, PLN critic</div></div>
+          <div class="contributor-alignment align-critic">Compass Critic</div>
+        </div>
+        <div class="contributor-positions">
+          <div class="position-item real-pos"><div class="position-type">Core Position: Policy Leverage Threat</div>Compass consolidation's danger is not headcount — it's the policy leverage Compass gains to shape MLS and industry rules in its favor at independent brokers' expense. NEW, May 2026.</div>
+          <div class="position-item real-pos"><div class="position-type">On Private Exclusives</div>Appropriate for 1–2% of sellers in unique situations. Compass pitches to ~100%. Serves agent and broker interests, not seller interests. ~97% of Compass private exclusives eventually reach MLS anyway — reveals listing acquisition as primary function.</div>
+          <div class="position-item analysis"><div class="position-type">End-State Warning</div>Predicts buyers will eventually need a Compass agent to access Compass listings. Calls this a future class action lawsuit. Frames entire dynamic as "race to the bottom" with both portals and large brokerages competing to control inventory.</div>
+          <div class="position-item stated-pos"><div class="position-type">On AI / Technology (Dissent)</div>AI impact is overstated in luxury market. Relationship and physical nature of real estate work insulates agents. Industry is "pretending" AI matters more than it does for competitive positioning. NEW, May 2026.</div>
+          <div class="position-item analysis"><div class="position-type">LA Market Data</div>Measure ULA (mansion tax, $5.3M+ threshold) cut transactions from ~65/month to under 30. Newport Beach and San Diego active. LA luxury "has been brutal." NEW, May 2026.</div>
+        </div>
+      </div>
+      <div class="contributor-card">
+        <div class="contributor-header">
+          <div><div class="contributor-name">Rebecca Jensen</div><div class="contributor-role">CEO, MRED (Midwest Real Estate Data) — Chicagoland MLS, PLN infrastructure backbone, antitrust co-defendant</div></div>
+          <div class="contributor-alignment align-compass">Compass-Aligned</div>
+        </div>
+        <div class="contributor-positions">
+          <div class="position-item stated-pos"><div class="position-type">Stated Position</div>MRED serves regional brokers and members through MLS infrastructure.</div>
+          <div class="position-item real-pos"><div class="position-type">Real Role</div>MRED became the backbone of Compass's national PLN expansion. Dropping NAR membership requirement (April 2026) was the operational mechanism that bypassed CCP enforcement. Now named co-defendant in Zillow's federal antitrust suit. Subject to federal court injunction ordering listing access restoration.</div>
+          <div class="position-item analysis"><div class="position-type">Alleged Conduct</div>Caitlin McCrory (Compass, Industry Relations) alleged to have conducted coercive MLS outreach — pressuring MLSs to adopt Compass-favorable policies.</div>
+        </div>
+      </div>
+      <div class="contributor-card">
+        <div class="contributor-header">
+          <div><div class="contributor-name">Ricky Carruth</div><div class="contributor-role">Agent, Commentator — American Real Estate Association (AREA)</div></div>
+          <div class="contributor-alignment align-neutral">Independent</div>
+        </div>
+        <div class="contributor-positions">
+          <div class="position-item stated-pos"><div class="position-type">Stated Position</div>AREA represents working agents' interests distinct from NAR and broker-dominated policy debates.</div>
+          <div class="position-item real-pos"><div class="position-type">Strategic Role</div>NAR alternative positioning — seeks to represent the working agent voice, aligned with Boero's "silent majority" framing. Agents as a constituency separate from franchisor and portal interests.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-timeline">
+    <div class="section-label">Chronological Developments</div>
+    <div class="timeline">
+      <div class="timeline-item tl-new">
+        <div class="tl-date">May 26, 2026</div>
+        <div class="tl-title">Judge Orders MRED to Restore Zillow's Chicagoland Listing Access</div>
+        <div class="tl-body">Federal court preliminary injunction victory for Zillow. MRED ordered to restore full listing access. Signals court skepticism of feed-cut strategy as competitive tool.</div>
+        <div class="tl-tags"><span class="tag tag-litigation">Litigation</span><span class="tag tag-breaking">Breaking</span></div>
+      </div>
+      <div class="timeline-item tl-new">
+        <div class="tl-date">May 26, 2026</div>
+        <div class="tl-title">Oppenheim: Compass Play Is Policy Leverage, Not Just Listings</div>
+        <div class="tl-body">Inman interview ahead of Connect San Diego. Oppenheim warns consolidation danger is policy weight, not headcount. ~97% of private exclusives reach MLS anyway. Predicts buyer access gating as future class action. Calls current dynamic "race to the bottom."</div>
+        <div class="tl-tags"><span class="tag tag-entity">Oppenheim</span><span class="tag tag-new">New</span></div>
+      </div>
+      <div class="timeline-item tl-major">
+        <div class="tl-date">May 2026</div>
+        <div class="tl-title">Boero: "Friday Flash — What About the Agent?"</div>
+        <div class="tl-body">1000watt analysis. MLS as foundational agent infrastructure. Silent majority of agents indifferent to corporate fight. Zillow allegedly routing listings through friendly MLSs. "Hall of rhetorical mirrors" diagnosis. Agents as collateral damage.</div>
+        <div class="tl-tags"><span class="tag tag-entity">Boero</span><span class="tag tag-policy">Analysis</span></div>
+      </div>
+      <div class="timeline-item tl-breaking">
+        <div class="tl-date">May 14, 2026</div>
+        <div class="tl-title">Errol Samuelson / Zillow Interview (Inman)</div>
+        <div class="tl-body">Samuelson details Zillow's position on listing access and the Compass feed cut. Portal existential framing surfaces.</div>
+        <div class="tl-tags"><span class="tag tag-entity">Zillow</span><span class="tag tag-litigation">Litigation</span></div>
+      </div>
+      <div class="timeline-item tl-breaking">
+        <div class="tl-date">May 8, 2026</div>
+        <div class="tl-title">Compass Terminates Direct Zillow Feeds</div>
+        <div class="tl-body">Compass cuts direct data feeds to Zillow, removing 25%+ of Chicagoland listings from portal. Triggers Zillow's federal lawsuit filing. MLS Grid simultaneously warns Zillow with compliance deadline.</div>
+        <div class="tl-tags"><span class="tag tag-entity">Compass</span><span class="tag tag-entity">Zillow</span><span class="tag tag-breaking">Breaking</span></div>
+      </div>
+      <div class="timeline-item tl-major">
+        <div class="tl-date">May 5, 2026</div>
+        <div class="tl-title">Zillow / Realtor.com Pre-Marketing Partnership</div>
+        <div class="tl-body">Rival portals announce pre-marketing listing partnership. Structurally unusual cooperation between competitors, signaling severity of the PLN threat to portal inventory models.</div>
+        <div class="tl-tags"><span class="tag tag-entity">Zillow</span><span class="tag tag-infra">Partnership</span></div>
+      </div>
+      <div class="timeline-item tl-breaking">
+        <div class="tl-date">May 2026</div>
+        <div class="tl-title">Zillow Files Federal Antitrust Lawsuit vs. Compass and MRED</div>
+        <div class="tl-body">U.S. District Court, Northern Illinois. Claims: per se unlawful boycott and monopoly enforcement. Names MRED (Rebecca Jensen) as co-defendant alongside Compass (Reffkin). Alleges coordinated effort to exclude Zillow from listing access.</div>
+        <div class="tl-tags"><span class="tag tag-litigation">Federal Lawsuit</span><span class="tag tag-breaking">Breaking</span></div>
+      </div>
+      <div class="timeline-item tl-major">
+        <div class="tl-date">April 2026</div>
+        <div class="tl-title">Compass / MRED PLN National Expansion — NAR Membership Requirement Dropped</div>
+        <div class="tl-body">MRED drops NAR membership requirement, enabling Compass to use MRED as backbone for national PLN rollout without triggering NAR CCP enforcement. The "Compass playbook" in action: rule change + nationwide MLS expansion + Compass as launch partner.</div>
+        <div class="tl-tags"><span class="tag tag-entity">Compass</span><span class="tag tag-entity">MRED</span><span class="tag tag-policy">PLN</span></div>
+      </div>
+      <div class="timeline-item tl-notable">
+        <div class="tl-date">Ongoing / 2025–2026</div>
+        <div class="tl-title">27% of 2025 Buyers Used AI to Find Agents</div>
+        <div class="tl-body">Structural data point: AI is beginning to decouple agent selection from listing display, undermining portal lead-gen moats over time. Long-run structural threat to both Zillow and Compass agent-lead models.</div>
+        <div class="tl-tags"><span class="tag tag-infra">AI Shift</span><span class="tag tag-market">Structural</span></div>
+      </div>
+      <div class="timeline-item tl-notable">
+        <div class="tl-date">June 2026 (Effective)</div>
+        <div class="tl-title">Washington State Mandatory Full Public Marketing Law</div>
+        <div class="tl-body">First state-level direct challenge to PLN model. Live regulatory test case. Outcome will signal whether legislative approaches can constrain private exclusives where NAR rule enforcement has not.</div>
+        <div class="tl-tags"><span class="tag tag-policy">Regulation</span><span class="tag tag-new">Watch</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-glossary">
+    <div class="section-label">Key Terms & Industry Concepts</div>
+    <div class="two-col" style="margin-top:8px">
+      <div><div style="display:flex;flex-direction:column;gap:12px">
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">PLN</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Private Listing Network</div><div style="font-size:12.5px;color:var(--text-muted)">A system that allows listings to circulate within a brokerage or controlled network before (or instead of) MLS publication. Compass operates the largest PLN in the US. At scale, creates inventory exclusion effects that smaller brokerages cannot replicate.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">CCP</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Clear Cooperation Policy</div><div style="font-size:12.5px;color:var(--text-muted)">NAR rule requiring listings to be submitted to the MLS within 1 business day of public marketing. The primary rule Compass's PLN strategy engineers around. MRED dropping NAR membership requirement was designed to bypass CCP enforcement.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">Double-Ending</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Double-Ending / Dual Agency</div><div style="font-size:12.5px;color:var(--text-muted)">When the same agent (or same brokerage) represents both buyer and seller in a transaction, collecting both sides of the commission. Private exclusives circulating within a brokerage's network create structural opportunity for double-ending.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">MLS Grid</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">MLS Grid</div><div style="font-size:12.5px;color:var(--text-muted)">Data distribution infrastructure layer sitting between MLSs and portals. Issued compliance warning to Zillow with deadline aligned with Compass's May 8 feed cut — raised questions about coordinated pressure on the portal.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">LAS</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Listing Access Standards</div><div style="font-size:12.5px;color:var(--text-muted)">Industry framework governing how and when listings must be made available to the broader market. Active area of policy debate as PLN expansion strains existing standards.</div></div>
+      </div></div>
+      <div><div style="display:flex;flex-direction:column;gap:12px">
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">MRED</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Midwest Real Estate Data</div><div style="font-size:12.5px;color:var(--text-muted)">Chicagoland's regional MLS. Rebecca Jensen is CEO. Named co-defendant in Zillow's federal antitrust suit. Dropped NAR membership requirement April 2026 — the operational mechanism enabling Compass's national PLN expansion. Subject to federal court injunction.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">Compass Playbook</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">The "Compass Playbook" Pattern</div><div style="font-size:12.5px;color:var(--text-muted)">Rule change + nationwide MLS expansion + Compass as launch partner. Identified pattern in how Compass has structured its PLN infrastructure expansion: find an MLS willing to modify its rules (drop NAR requirement), use that MLS as the backbone, then roll out nationally.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">Hall of Mirrors</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Hall of Rhetorical Mirrors (Boero)</div><div style="font-size:12.5px;color:var(--text-muted)">Boero's diagnosis of the Compass–Zillow consumer-welfare debate. When competing parties simultaneously invoke consumer welfare for opposing positions, consumer-welfare framing is a rhetorical tell, not a genuine principle.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">Plain Language Test</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Boero's Plain Language Disclosure Test</div><div style="font-size:12.5px;color:var(--text-muted)">Proposed benchmark: can a disclosure be read aloud to a client and have them understand what's actually happening? Applied to contact forms, referral arrangements, and PLN pitches — most current industry disclosures fail this test.</div></div>
+        <div class="intel-item"><div class="intel-meta"><span class="tag tag-entity">Measure ULA</span></div><div style="font-size:13px;font-weight:600;margin-bottom:4px">Measure ULA (LA Mansion Tax)</div><div style="font-size:12.5px;color:var(--text-muted)">Los Angeles transfer tax on properties sold above $5.3M. Has reduced transactions in that tier from ~65/month to under 30/month. Oppenheim: "It's been brutal." Market-specific regulatory impact on luxury segment.</div></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="panel" id="panel-add">
+    <div class="section-label">Add New Intelligence · Claude API Integration</div>
+    <div class="add-article-layout">
+      <div>
+        <div class="form-card">
+          <h3>Paste Article Text</h3>
+          <div class="api-key-group">
+            <label>Anthropic API Key (stored in session only)</label>
+            <input type="password" id="apiKey" placeholder="sk-ant-...">
+          </div>
+          <div class="form-group">
+            <label>Article Source / Publication</label>
+            <input type="text" id="articleSource" placeholder="e.g. Inman, 1000watt, RealTrends...">
+          </div>
+          <div class="form-group">
+            <label>Article Date</label>
+            <input type="text" id="articleDate" placeholder="e.g. May 2026">
+          </div>
+          <div class="form-group">
+            <label>Article Text</label>
+            <textarea id="articleText" placeholder="Paste full article text here..."></textarea>
+          </div>
+          <button class="btn" id="extractBtn" onclick="extractIntelligence()">Extract Intelligence</button>
+          <div class="status-indicator" id="statusIndicator">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Ready</span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="form-card">
+          <h3>Extracted Intelligence</h3>
+          <div class="output-box" id="outputBox">Intelligence extraction results will appear here after processing...
+
+This tool uses Claude to analyze pasted articles through the same stated vs. real reason framework applied throughout this tracker.
+
+Items will be flagged as:
+• NEW — not previously tracked
+• UPDATES — refinements to existing entries
+• DUPLICATE — already captured
+
+Strip opinion, promotional content, and personal anecdotes — only industry-relevant intelligence extracted.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+
+  async function extractIntelligence() {
+    const apiKey = document.getElementById('apiKey').value.trim();
+    const source = document.getElementById('articleSource').value.trim();
+    const date = document.getElementById('articleDate').value.trim();
+    const text = document.getElementById('articleText').value.trim();
+    const btn = document.getElementById('extractBtn');
+    const output = document.getElementById('outputBox');
+    const dot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    if (!apiKey) { alert('Please enter your Anthropic API key.'); return; }
+    if (!text) { alert('Please paste article text.'); return; }
+
+    btn.disabled = true;
+    dot.classList.add('active');
+    statusText.textContent = 'Extracting intelligence...';
+    output.textContent = 'Processing...';
+
+    const systemPrompt = `You are an intelligence analyst for a real estate industry tracker focused on the competitive dynamics between brokers (especially Compass), portals (Zillow, Realtor.com), and MLS infrastructure.
+
+Your primary analytical framework is STATED REASON vs. REAL REASON — for every development, distinguish official public framing from underlying competitive mechanics.
+
+Key tracked entities: Robert Reffkin / Compass, Errol Samuelson / Zillow, Brian Boero / 1000watt, Rebecca Jensen / MRED, Jason Oppenheim / Oppenheim Group, Ricky Carruth / AREA, REMAX.
+
+Key topics: Private Listing Networks (PLN), Clear Cooperation Policy, MLS infrastructure, portal competition, double-ending, feed cuts, broker consolidation, consumer-welfare rhetoric.
+
+For each article, extract:
+1. New intelligence items (not previously tracked)
+2. For each item: Entity, Stated Reason, Real Reason, Supporting evidence
+3. Flag whether each item is NEW, UPDATES existing tracking, or DUPLICATE
+
+Strip: opinion without factual basis, promotional content, personal anecdotes, AI/tech hype without evidence.
+
+Format output clearly with sections. Be precise and analytical. No fluff.`;
+
+    const userPrompt = `Source: ${source || 'Unknown'}
+Date: ${date || 'Unknown'}
+
+Article text:
+${text}
+
+Extract intelligence items following the stated vs. real reason framework. Flag what is genuinely new vs. already known in the competitive intelligence landscape.`;
+
+    try {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1500,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userPrompt }]
+        })
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error?.message || 'API error');
+      }
+
+      const data = await response.json();
+      const result = data.content.map(b => b.text || '').join('\n');
+      output.textContent = result;
+      dot.classList.remove('active');
+      dot.style.background = 'var(--green)';
+      statusText.textContent = 'Extraction complete';
+
+    } catch (err) {
+      output.textContent = 'Error: ' + err.message;
+      dot.classList.remove('active');
+      dot.style.background = 'var(--red)';
+      statusText.textContent = 'Error — check API key';
+    }
+
+    btn.disabled = false;
+  }
+</script>
+</body>
+</html>
