@@ -33,7 +33,7 @@
     header {
       background: var(--navy);
       border-bottom: 4px double var(--gold);
-      padding: 2.5rem 2rem 2.25rem;
+      padding: 1.75rem 2rem 1.5rem;
       text-align: center;
     }
     .header-inner {
@@ -41,66 +41,28 @@
       margin: 0 auto;
     }
     .header-logo {
-      width: 64px;
-      height: 64px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       display: block;
-      margin: 0 auto 1.1rem;
-    }
-    .brand-name {
-      font-family: Georgia, 'Times New Roman', serif;
-      font-size: 0.75rem;
-      font-weight: 500;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.6);
-      margin-bottom: 1rem;
-    }
-    .brand-name span {
-      color: #fff;
+      margin: 0 auto 0.75rem;
     }
     h1 {
       font-family: Georgia, 'Times New Roman', serif;
-      font-size: clamp(2rem, 5vw, 3rem);
+      font-size: clamp(1.75rem, 4.5vw, 2.5rem);
       font-weight: 700;
       color: #fff;
       letter-spacing: 0.04em;
       text-transform: uppercase;
       line-height: 1.1;
-      margin-bottom: 0.6rem;
-    }
-    h1 span {
-      color: #fff;
+      margin-bottom: 0.4rem;
     }
     .subtitle {
+      font-family: Georgia, 'Times New Roman', serif;
       font-size: 0.95rem;
-      color: rgba(255,255,255,0.6);
-      font-weight: 300;
-      letter-spacing: 0.03em;
-    }
-    .meta-row {
-      display: flex;
-      justify-content: center;
-      gap: 2.5rem;
-      margin-top: 1.8rem;
-      flex-wrap: wrap;
-    }
-    .meta-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.2rem;
-    }
-    .meta-label {
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-    }
-    .meta-value {
-      font-size: 0.85rem;
-      color: #fff;
-      font-weight: 500;
+      color: rgba(255,255,255,0.75);
+      font-weight: 400;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
@@ -281,22 +243,8 @@
     <a href="https://burnshomes.com" target="_blank">
       <img class="header-logo" src="https://raw.githubusercontent.com/burnshomes247/media/main/logo/burnshomes-logo-circle.png" alt="BURNSHOMES">
     </a>
-    <div class="brand-name">BURNSHOMES &nbsp;·&nbsp; <span>RE/MAX Allegiance</span></div>
-    <h1>Market <span>Outlook</span></h1>
-    <div class="meta-row">
-      <div class="meta-item">
-        <span class="meta-label">Market</span>
-        <span class="meta-value">Virginia · Maryland · DC</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Last Updated</span>
-        <span class="meta-value" id="last-updated">May 2025</span>
-      </div>
-      <div class="meta-item">
-        <span class="meta-label">Prepared by</span>
-        <span class="meta-value">Mike Burns · (703) 403-2022</span>
-      </div>
-    </div>
+    <h1>Market Outlook</h1>
+    <div class="subtitle" id="last-updated">Last updated July 2026</div>
   </div>
 </header>
 
