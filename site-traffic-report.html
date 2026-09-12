@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Site Traffic Report · BURNSHOMES</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #e8e8e8;
+  padding: 24px;
+  font-family: Georgia, 'Times New Roman', serif;
+  min-height: 100vh;
+}
+.page {
+  width: 100%;
+  max-width: 720px;
+  background: #fff;
+  margin: 0 auto;
+  position: relative;
+  padding: 0;
+}
+.border-outer {
+  position: absolute; top: 14px; left: 14px; right: 14px; bottom: 14px;
+  border: 1px solid #1a1a1a; pointer-events: none; z-index: 2;
+}
+.border-inner {
+  position: absolute; top: 19px; left: 19px; right: 19px; bottom: 19px;
+  border: 0.4px solid #1a1a1a; pointer-events: none; z-index: 2;
+}
+.content {
+  position: relative; z-index: 1;
+  padding: 40px 56px 40px 56px;
+  display: flex; flex-direction: column; align-items: center;
+}
+.logo-wrap { margin-top: 8px; width: 60px; height: 60px; }
+.logo-wrap img { width: 60px; height: 60px; display: block; border-radius: 50%; }
+.header-rule { width: calc(100% - 40px); height: 0.6px; background: #1a1a1a; margin-top: 14px; }
+.page-title { margin-top: 18px; font-size: 20pt; font-weight: bold; letter-spacing: 0.04em; color: #1a1a1a; text-align: center; text-transform: uppercase; }
+.title-rule { width: 180px; height: 0.5px; background: #1a1a1a; margin-top: 10px; }
+.address-line { margin-top: 14px; font-size: 13pt; font-weight: bold; letter-spacing: 0.06em; color: #1a1a1a; text-align: center; text-transform: uppercase; }
+.date-line { font-size: 8pt; letter-spacing: 0.14em; color: #888; margin-top: 6px; text-align: center; text-transform: uppercase; }
+.section-rule { width: calc(100% - 40px); height: 0.6px; background: #1a1a1a; margin-top: 24px; }
+.section-label { font-size: 7pt; letter-spacing: 0.28em; color: #888; margin-top: 10px; text-align: center; text-transform: uppercase; }
+
+/* Site header (per-site masthead within the report) */
+.site-rule { width: calc(100% - 40px); height: 1.5px; background: #1c3668; margin-top: 34px; }
+.site-title { margin-top: 14px; font-size: 15pt; font-weight: bold; letter-spacing: 0.1em; color: #1c3668; text-align: center; text-transform: uppercase; }
+
+/* Loading state */
+.loading { text-align: center; padding: 40px; font-size: 9pt; letter-spacing: 0.2em; color: #888; text-transform: uppercase; }
+.error { text-align: center; padding: 20px; font-size: 9pt; letter-spacing: 0.1em; color: #c00; text-transform: uppercase; }
+
+/* Scorecards */
+.scorecards { display: grid; grid-template-columns: repeat(3, 1fr); width: 100%; margin-top: 14px; border: 0.5px solid #1a1a1a; }
+.scorecard { padding: 18px 10px; text-align: center; border-right: 0.5px solid #1a1a1a; }
+.scorecard:last-child { border-right: none; }
+.sc-label { font-size: 7pt; letter-spacing: 0.2em; color: #888; margin-bottom: 10px; text-transform: uppercase; }
+.sc-value { font-size: 26pt; font-weight: bold; color: #1c3668; line-height: 1; }
+.sc-sub { font-size: 7pt; letter-spacing: 0.1em; color: #aaa; margin-top: 6px; text-transform: uppercase; }
+
+/* Chart */
+.chart-section { width: 100%; margin-top: 8px; }
+.bars { display: flex; align-items: flex-end; gap: 4px; height: 90px; width: 100%; }
+.bar-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+.bar { border-radius: 1px 1px 0 0; width: 100%; transition: opacity 0.2s; }
+.bar:hover { opacity: 0.75; }
+.bar-lbl { font-size: 6pt; letter-spacing: 0.04em; color: #aaa; text-transform: uppercase; }
+.chart-baseline { width: 100%; height: 0.5px; background: #1a1a1a; }
+.legend { display: flex; align-items: center; justify-content: center; gap: 24px; margin-top: 8px; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 6.5pt; letter-spacing: 0.12em; color: #888; text-transform: uppercase; }
+.legend-dot { width: 8px; height: 8px; border-radius: 1px; flex-shrink: 0; }
+
+/* Two col */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; width: 100%; margin-top: 8px; border: 0.5px solid #1a1a1a; }
+.col-section { padding: 16px 16px; }
+.col-section:first-child { border-right: 0.5px solid #1a1a1a; }
+.col-title { font-size: 7pt; letter-spacing: 0.22em; color: #888; margin-bottom: 14px; text-align: center; text-transform: uppercase; }
+.source-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.source-name { font-size: 7.5pt; color: #1a1a1a; letter-spacing: 0.06em; width: 72px; flex-shrink: 0; text-transform: uppercase; }
+.source-track { flex: 1; background: #eee; height: 5px; }
+.source-fill { height: 100%; }
+.source-pct { font-size: 7pt; color: #888; width: 28px; text-align: right; }
+
+/* Footer */
+.footer-rule { width: calc(100% - 40px); height: 0.6px; background: #1a1a1a; margin-top: 24px; }
+.footer-text { font-size: 7pt; letter-spacing: 0.1em; color: #bbb; text-align: center; margin-top: 10px; line-height: 2; text-transform: uppercase; margin-bottom: 8px; }
+.footer-name { font-size: 7.5pt; letter-spacing: 0.16em; color: #1a1a1a; font-weight: bold; }
+
+/* Date range picker */
+.date-controls { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.date-controls label { font-size: 7pt; letter-spacing: 0.15em; color: #888; text-transform: uppercase; }
+.date-controls input[type="date"] { font-family: Georgia, serif; font-size: 7.5pt; border: 0.5px solid #ccc; padding: 4px 8px; color: #1a1a1a; background: #fff; letter-spacing: 0.05em; }
+.date-controls button { font-family: Georgia, serif; font-size: 7pt; letter-spacing: 0.15em; text-transform: uppercase; background: #1c3668; color: #fff; border: none; padding: 5px 14px; cursor: pointer; }
+.date-controls button:hover { background: #5b8db8; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="border-outer"></div>
+  <div class="border-inner"></div>
+  <div class="content">
+
+    <div class="logo-wrap">
+      <img src="https://raw.githubusercontent.com/burnshomes247/listings/main/burnshomes-logo.png" alt="BURNSHOMES">
+    </div>
+
+    <div class="header-rule"></div>
+    <div class="page-title">Site Traffic Report</div>
+    <div class="title-rule"></div>
+    <div class="address-line">BURNSHOMES.COM &middot; BURNSAPPRAISALS.COM</div>
+    <div id="date-display" class="date-line">Loading...</div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Adjust Date Range</div>
+    <div class="date-controls">
+      <label>From</label>
+      <input type="date" id="start-date">
+      <label>To</label>
+      <input type="date" id="end-date">
+      <button onclick="fetchData()">Update</button>
+    </div>
+
+    <div class="site-rule"></div>
+    <div class="site-title">Burnshomes.com</div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Online Visibility Summary</div>
+    <div id="scorecards-wrap-bh">
+      <div class="loading">Fetching live data...</div>
+    </div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Daily Traffic — Views Over Time</div>
+    <div id="chart-wrap-bh" class="chart-section">
+      <div class="loading">...</div>
+    </div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Traffic Breakdown</div>
+    <div id="breakdown-wrap-bh">
+      <div class="loading">...</div>
+    </div>
+
+    <div class="site-rule"></div>
+    <div class="site-title">Burnsappraisals.com</div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Online Visibility Summary</div>
+    <div id="scorecards-wrap-ba">
+      <div class="loading">Fetching live data...</div>
+    </div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Daily Traffic — Views Over Time</div>
+    <div id="chart-wrap-ba" class="chart-section">
+      <div class="loading">...</div>
+    </div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Traffic Breakdown</div>
+    <div id="breakdown-wrap-ba">
+      <div class="loading">...</div>
+    </div>
+
+    <div class="footer-rule"></div>
+    <div class="footer-text">
+      <div class="footer-name">Mike Burns · BURNSHOMES · RE/MAX Allegiance</div>
+      (703) 403-2022 · mike@burnshomes.com · burnshomes.com
+    </div>
+
+  </div>
+</div>
+
+<script>
+// GA4 config
+const GA4_PROPERTY_ID = '533922241';
+
+// Service account credentials
+const SA_EMAIL = 'burnshomes-ga4-reader@burnshomes-reports.iam.gserviceaccount.com';
+const SA_KEY = `-----BEGIN PRIVATE KEY-----
+MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC/hBZLnQpB9ytM
+VFCYGAEaHiL5500g2frFKuCACUYClZKbRzv9sNe53tJAJWxhK8VvpKPMJqFr9Z4t
+o3HQULwLPt+TYHGnlHVNrH546Bs7j/YacE7P5ezxqGMTWg7pc0SnKtSQLKRhZS0I
+xWkv61nSdViN96wadDPF82T27+ZoJm78iElru28tDBwbOGa5Tm3Q2INpfSqHAJqM
+tWo4n7Opa9gkZBGAemNWla2HNV9iB2RunH06JzE3yj4aTWgiTLBd/WPVoYGCgwli
+ycLgtux3+XuOCiwx47uJfwO9rUf9kXF2YpS0yBnVrXMnR3SRa4MHInc+8rvsIxIy
+O2u3krE7AgMBAAECggEAH09+f6UwiKFaxFNii8Mc5wK3UCkHHJBWpcaBRp19gy2l
+9tn6DltLoZkywYb8xZQs5rhBiT5llKtmzWpT0K1qWOJSFhul6TJlzSme0bCMxzud
+jiv/TpD2IHoZnI/UMUmFl1jywJFz3HJ4nt77d/ifyj8iF6++xOJrlnjY8GA/SJZ7
+LbAPmc8z2hnLypxluCbGeI+3sJsm4xFhueZPFGWkeui0x0Dz/8UQPyFBeyha8R8q
+k8vIEIP2QW9NNOp8aXRFkaG/fMHzE+ShQe0F6RaV9LtKVyt8iV3a3Xdw+xZe3oCS
+D+/VWdltOjT8XmCntw8sc1cUPnhnRdYWykTRb3HzYQKBgQD2UtQOdmETi0elrFr6
+pQdnGAM0sYjsYGWNaEZ5S3kDESXzhA2eHz3uQVf8+beZt0fUJ7BHYkCDZlOEbOEy
+wBHWfYpIcWA+xXAHg7rsUusT2QqRTxVn5QDvitq8Spj2MM9UwjQPK0SXBBUzOXJd
+p54DAHPTNwUrzTz4mNucQds8GwKBgQDHChUDbC1ErPIczR4j2ZWz13KKVeCvx6xF
+ZC287juihUwyQVJ9inlGttopTBzG1pneKyytNHkr6kyNEHQ3fNqlXND6q5Ocgf6D
+/Y/7nvmu/ezk9GDy3vs71FgS99sDeFuxoLk2eKmhVrJc4OTSG9M44oH4liuqqPFv
+I5FlJ3txYQKBgHTbWJS/3k/6THQxbzvnXLqw7pxp+Q5CsQrDxGM4xeEJmpqLNDam
+lafZQhfWlB6Nj7r7VSqYVwi/W7HAQZnk+tFp31d8ye8dlYdLHDuPHszcs6G6Beqy
+/p2lnx2iuixZfZK1SyNDIJgQLMqPX01E/rZn2YsDWCWuiVValxzrNUmvAoGAfWAq
+cGd59GKEeAP00lxC4m/6JI2H5PH/4A4EiZf/VJZmstlW3uGVFygjMBRTpCSV8856
+a/g7w5/o7IrKyhEJoVRgByaA6vsvmXDle3heiw5EZMxTLWmsE7nkaL5b5UmxaKh3
+QoqrP4fe/oZjXL5OROzZNf9SLkQRIRLkiTVfmsECgYEAoo31bKIImLpL2E4SYIXW
+ZSGlS9YPcqsJbxiXNar8G6Jq8BR84+j2l9DFp1LKS/W4tKWJMpQ4uqaC5JRVHDgR
+M6xbYyWoTSTaS3Cd2CgD6ZV4e61/vnRTgeKfDW10KOWLslqIncIiMpyEfKuYijyk
+a1T3Netau/wcNKk8e9f84Is=
+-----END PRIVATE KEY-----`;
+
+// JWT helpers
+function base64url(str) {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+function base64urlUint8(bytes) {
+  let str = '';
+  bytes.forEach(b => str += String.fromCharCode(b));
+  return base64url(str);
+}
+
+async function getAccessToken() {
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  const claim = {
+    iss: SA_EMAIL,
+    scope: 'https://www.googleapis.com/auth/analytics.readonly',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now
+  };
+  const toSign = base64url(JSON.stringify(header)) + '.' + base64url(JSON.stringify(claim));
+
+  const pemContents = SA_KEY.replace(/-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\n/g, '');
+  const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8', binaryDer.buffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false, ['sign']
+  );
+  const encoder = new TextEncoder();
+  const sigBuffer = await crypto.subtle.sign('RSASSA-PKCS1-v1_5', cryptoKey, encoder.encode(toSign));
+  const jwt = toSign + '.' + base64urlUint8(new Uint8Array(sigBuffer));
+
+  const resp = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`
+  });
+  const data = await resp.json();
+  return data.access_token;
+}
+
+function formatDate(d) {
+  return d.toISOString().split('T')[0];
+}
+function fmtDisplay(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+}
+function fmtSec(secs) {
+  if (!secs) return '0s';
+  secs = Math.round(secs);
+  if (secs < 60) return secs + 's';
+  return Math.floor(secs/60) + 'm ' + (secs%60) + 's';
+}
+
+async function fetchSiteData(token, headers, baseUrl, startInput, endInput, hostValue, suffix) {
+  const filter = { filter: { fieldName: 'hostName', stringFilter: { matchType: 'EXACT', value: hostValue } } };
+
+  const summaryResp = await fetch(baseUrl, {
+    method: 'POST', headers,
+    body: JSON.stringify({
+      dateRanges: [{ startDate: startInput, endDate: endInput }],
+      metrics: [{ name: 'screenPageViews' }, { name: 'activeUsers' }, { name: 'averageSessionDuration' }],
+      dimensionFilter: filter
+    })
+  });
+  const summary = await summaryResp.json();
+  const row = summary.rows?.[0]?.metricValues || [{value:'0'},{value:'0'},{value:'0'}];
+  const views = parseInt(row[0].value).toLocaleString();
+  const users = parseInt(row[1].value).toLocaleString();
+  const avgTime = fmtSec(parseFloat(row[2].value));
+
+  const dailyResp = await fetch(baseUrl, {
+    method: 'POST', headers,
+    body: JSON.stringify({
+      dateRanges: [{ startDate: startInput, endDate: endInput }],
+      dimensions: [{ name: 'date' }],
+      metrics: [{ name: 'screenPageViews' }],
+      dimensionFilter: filter,
+      orderBys: [{ dimension: { dimensionName: 'date' } }]
+    })
+  });
+  const daily = await dailyResp.json();
+  const dailyRows = daily.rows || [];
+
+  const sourcesResp = await fetch(baseUrl, {
+    method: 'POST', headers,
+    body: JSON.stringify({
+      dateRanges: [{ startDate: startInput, endDate: endInput }],
+      dimensions: [{ name: 'sessionDefaultChannelGroup' }],
+      metrics: [{ name: 'sessions' }],
+      dimensionFilter: filter,
+      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+      limit: 5
+    })
+  });
+  const sources = await sourcesResp.json();
+  const sourceRows = sources.rows || [];
+
+  const deviceResp = await fetch(baseUrl, {
+    method: 'POST', headers,
+    body: JSON.stringify({
+      dateRanges: [{ startDate: startInput, endDate: endInput }],
+      dimensions: [{ name: 'deviceCategory' }],
+      metrics: [{ name: 'sessions' }],
+      dimensionFilter: filter,
+      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }]
+    })
+  });
+  const devices = await deviceResp.json();
+  const deviceRows = devices.rows || [];
+
+  // Render scorecards
+  document.getElementById('scorecards-wrap-' + suffix).innerHTML = `
+    <div class="scorecards">
+      <div class="scorecard">
+        <div class="sc-label">Total Views</div>
+        <div class="sc-value">${views}</div>
+        <div class="sc-sub">Page impressions</div>
+      </div>
+      <div class="scorecard">
+        <div class="sc-label">Active Visitors</div>
+        <div class="sc-value">${users}</div>
+        <div class="sc-sub">Unique people</div>
+      </div>
+      <div class="scorecard">
+        <div class="sc-label">Avg. Time on Page</div>
+        <div class="sc-value">${avgTime}</div>
+        <div class="sc-sub">Engagement time</div>
+      </div>
+    </div>`;
+
+  // Render chart
+  const dr = dailyRows;
+  if (!dr.length) {
+    document.getElementById('chart-wrap-' + suffix).innerHTML = '<div class="loading">No data for this period</div>';
+  } else {
+    const vals = dr.map(r => parseInt(r.metricValues[0].value));
+    const maxV = Math.max(...vals, 1);
+    const W = 580, H = 100, PAD_L = 28, PAD_R = 8, PAD_T = 8, PAD_B = 20;
+    const iW = W - PAD_L - PAD_R, iH = H - PAD_T - PAD_B;
+    const px = (i) => PAD_L + (i / (dr.length - 1 || 1)) * iW;
+    const py = (v) => PAD_T + iH - (v / maxV) * iH;
+    let gridLines = '';
+    [0, 0.5, 1].forEach(t => {
+      const y = PAD_T + iH - t * iH;
+      gridLines += '<line x1="' + PAD_L + '" y1="' + y + '" x2="' + (W-PAD_R) + '" y2="' + y + '" stroke="#eee" stroke-width="0.5"/>';
+      gridLines += '<text x="' + (PAD_L-3) + '" y="' + (y+3) + '" font-size="6" fill="#aaa" text-anchor="end">' + Math.round(t*maxV) + '</text>';
+    });
+    let areaPath = 'M ' + px(0) + ' ' + py(vals[0]);
+    vals.forEach((v,i) => { if(i>0) areaPath += ' L ' + px(i) + ' ' + py(v); });
+    const areaClose = ' L ' + px(vals.length-1) + ' ' + (PAD_T+iH) + ' L ' + PAD_L + ' ' + (PAD_T+iH) + ' Z';
+    let linePath = 'M ' + px(0) + ' ' + py(vals[0]);
+    vals.forEach((v,i) => { if(i>0) linePath += ' L ' + px(i) + ' ' + py(v); });
+    const peakV = Math.max(...vals);
+    let dots = '';
+    vals.forEach((v,i) => { if(v===peakV) dots += '<circle cx="' + px(i) + '" cy="' + py(v) + '" r="3" fill="#5b8db8"/>'; });
+    let xLabels = '';
+    const step = Math.max(1, Math.floor(dr.length/6));
+    dr.forEach((r,i) => {
+      if(i%step===0 || i===dr.length-1) {
+        const d = r.dimensionValues[0].value;
+        const lbl = d.slice(4,6)+'/'+d.slice(6,8);
+        xLabels += '<text x="' + px(i) + '" y="' + H + '" font-size="6" fill="#aaa" text-anchor="middle">' + lbl + '</text>';
+      }
+    });
+    document.getElementById('chart-wrap-' + suffix).innerHTML =
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">' +
+      '<defs><linearGradient id="ag-' + suffix + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1c3668" stop-opacity="0.15"/><stop offset="100%" stop-color="#1c3668" stop-opacity="0.01"/></linearGradient></defs>' +
+      gridLines +
+      '<path d="' + areaPath + areaClose + '" fill="url(#ag-' + suffix + ')"/>' +
+      '<path d="' + linePath + '" fill="none" stroke="#1c3668" stroke-width="1.5"/>' +
+      dots + xLabels + '</svg>' +
+      '<div class="legend"><div class="legend-item"><div class="legend-dot" style="background:#1c3668"></div>Daily views</div>' +
+      '<div class="legend-item"><div class="legend-dot" style="background:#5b8db8;border-radius:50%"></div>Peak day</div></div>';
+  }
+
+  // Render breakdown
+  const totalSessions = sourceRows.reduce((s, r) => s + parseInt(r.metricValues[0].value), 0) || 1;
+  const sourceHtml = sourceRows.slice(0, 5).map((r, i) => {
+    const name = r.dimensionValues[0].value || 'Other';
+    const val = parseInt(r.metricValues[0].value);
+    const pct = Math.round((val / totalSessions) * 100);
+    const color = i === 0 ? '#1c3668' : '#5b8db8';
+    return `<div class="source-row">
+      <div class="source-name">${name}</div>
+      <div class="source-track"><div class="source-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="source-pct">${pct}%</div>
+    </div>`;
+  }).join('') || '<div class="sc-sub" style="text-align:center">No data</div>';
+
+  const totalDevices = deviceRows.reduce((s, r) => s + parseInt(r.metricValues[0].value), 0) || 1;
+  const deviceColors = ['#1c3668', '#5b8db8', '#aaa'];
+  const deviceHtml = deviceRows.map((r, i) => {
+    const name = r.dimensionValues[0].value || 'Other';
+    const val = parseInt(r.metricValues[0].value);
+    const pct = Math.round((val / totalDevices) * 100);
+    return `<div class="source-row">
+      <div class="source-name">${name}</div>
+      <div class="source-track"><div class="source-fill" style="width:${pct}%;background:${deviceColors[i]||'#ccc'}"></div></div>
+      <div class="source-pct">${pct}%</div>
+    </div>`;
+  }).join('') || '<div class="sc-sub" style="text-align:center">No data</div>';
+
+  document.getElementById('breakdown-wrap-' + suffix).innerHTML = `
+    <div class="two-col">
+      <div class="col-section">
+        <div class="col-title">Traffic Sources</div>
+        ${sourceHtml}
+      </div>
+      <div class="col-section">
+        <div class="col-title">Device Type</div>
+        ${deviceHtml}
+      </div>
+    </div>`;
+}
+
+async function fetchData() {
+  const startInput = document.getElementById('start-date').value;
+  const endInput = document.getElementById('end-date').value;
+
+  ['bh', 'ba'].forEach(suffix => {
+    document.getElementById('scorecards-wrap-' + suffix).innerHTML = '<div class="loading">Fetching live data...</div>';
+    document.getElementById('chart-wrap-' + suffix).innerHTML = '<div class="loading">...</div>';
+    document.getElementById('breakdown-wrap-' + suffix).innerHTML = '<div class="loading">...</div>';
+  });
+  document.getElementById('date-display').textContent = 'Loading...';
+
+  try {
+    const token = await getAccessToken();
+    const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+    const baseUrl = `https://analyticsdata.googleapis.com/v1beta/properties/${GA4_PROPERTY_ID}:runReport`;
+
+    await Promise.all([
+      fetchSiteData(token, headers, baseUrl, startInput, endInput, 'burnshomes.com', 'bh'),
+      fetchSiteData(token, headers, baseUrl, startInput, endInput, 'burnsappraisals.com', 'ba')
+    ]);
+
+    document.getElementById('date-display').textContent =
+      fmtDisplay(startInput) + ' – ' + fmtDisplay(endInput);
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('scorecards-wrap-bh').innerHTML = '<div class="error">Error loading data: ' + e.message + '</div>';
+  }
+}
+
+// Init: default last 30 days
+window.addEventListener('load', () => {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(start.getDate() - 30);
+  document.getElementById('start-date').value = formatDate(start);
+  document.getElementById('end-date').value = formatDate(end);
+  fetchData();
+});
+</script>
+</body>
+</html>
