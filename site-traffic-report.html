@@ -108,7 +108,7 @@ body {
     <div class="header-rule"></div>
     <div class="page-title">Site Traffic Report</div>
     <div class="title-rule"></div>
-    <div class="address-line">BURNSHOMES.COM &middot; BURNSAPPRAISALS.COM</div>
+    <div class="address-line">BURNSHOMES.COM &middot; BURNSAPPRAISALS.COM &middot; MIKE.REPORT</div>
     <div id="date-display" class="date-line">Loading...</div>
 
     <div class="section-rule"></div>
@@ -160,6 +160,27 @@ body {
     <div class="section-rule"></div>
     <div class="section-label">Traffic Breakdown</div>
     <div id="breakdown-wrap-ba">
+      <div class="loading">...</div>
+    </div>
+
+    <div class="site-rule"></div>
+    <div class="site-title" id="mike-report">Mike.report</div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Online Visibility Summary</div>
+    <div id="scorecards-wrap-mr">
+      <div class="loading">Fetching live data...</div>
+    </div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Daily Traffic — Views Over Time</div>
+    <div id="chart-wrap-mr" class="chart-section">
+      <div class="loading">...</div>
+    </div>
+
+    <div class="section-rule"></div>
+    <div class="section-label">Traffic Breakdown</div>
+    <div id="breakdown-wrap-mr">
       <div class="loading">...</div>
     </div>
 
@@ -429,7 +450,7 @@ async function fetchData() {
   const startInput = document.getElementById('start-date').value;
   const endInput = document.getElementById('end-date').value;
 
-  ['bh', 'ba'].forEach(suffix => {
+  ['bh', 'ba', 'mr'].forEach(suffix => {
     document.getElementById('scorecards-wrap-' + suffix).innerHTML = '<div class="loading">Fetching live data...</div>';
     document.getElementById('chart-wrap-' + suffix).innerHTML = '<div class="loading">...</div>';
     document.getElementById('breakdown-wrap-' + suffix).innerHTML = '<div class="loading">...</div>';
@@ -443,7 +464,8 @@ async function fetchData() {
 
     await Promise.all([
       fetchSiteData(token, headers, baseUrl, startInput, endInput, 'burnshomes.com', 'bh'),
-      fetchSiteData(token, headers, baseUrl, startInput, endInput, 'burnsappraisals.com', 'ba')
+      fetchSiteData(token, headers, baseUrl, startInput, endInput, 'burnsappraisals.com', 'ba'),
+      fetchSiteData(token, headers, baseUrl, startInput, endInput, 'mike.report', 'mr')
     ]);
 
     document.getElementById('date-display').textContent =
