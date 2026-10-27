@@ -237,8 +237,19 @@
     text-transform: uppercase;
   }
 
-  .platform-links a { text-decoration: none; color: var(--steel); }
-  .platform-links a:hover { text-decoration: underline; }
+  .platform-links { gap: 18px; flex-wrap: wrap; font-size: 18px; margin-bottom: 70px; }
+  .platform-links a {
+    text-decoration: none;
+    color: #fff;
+    background: var(--navy);
+    border: 2px solid var(--navy);
+    padding: 20px 38px;
+    min-width: 280px;
+    text-align: center;
+    letter-spacing: 0.08em;
+    transition: background 0.2s, color 0.2s;
+  }
+  .platform-links a:hover { background: #fff; color: var(--navy); text-decoration: none; }
 
   /* FAQ */
   .section-title {
@@ -334,7 +345,7 @@
       <span class="divider">·</span>
       <span>100 Zillow reviews</span>
       <span class="divider">·</span>
-      <span>94 Google reviews</span>
+      <span>98 Google reviews</span>
     </div>
     <div class="hero-ctas">
       <a href="#reviews" class="btn btn-primary">Read the Reviews</a>
