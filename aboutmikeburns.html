@@ -162,11 +162,16 @@
 
   /* PHOTO */
   .bio-photo {
-    width: 100%;
-    max-width: 340px;
-    border-radius: 3px;
-    margin: 20px 0;
-    display: block;
+    float: right;
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #0a2349;
+    margin: 4px 0 12px 24px;
+  }
+  @media (max-width: 560px) {
+    .bio-photo { float: none; display: block; margin: 0 auto 18px; width: 170px; height: 170px; }
   }
 
   /* FOOTER */
@@ -204,6 +209,7 @@
 <div class="section">
   <div class="section-title">A Note About Me</div>
   <div class="section-body">
+    <img class="bio-photo" src="images/mike-burns-headshot.jpg" alt="Mike Burns, REALTOR">
     <p>Earning a stranger's trust is difficult. Real estate is a big deal, so trust should be hard to earn. I hope the information below is a good first step to earning yours.</p>
     <p>You can read what others say about working with me here:</p>
     <div class="review-links">
